@@ -1,17 +1,30 @@
 <! DOCTYPE html>
-    <html>
+  <html>
 
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title> Page Title </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-        <script src="./dist/main.js" defer type="module"></script>
-    </head>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title> Page Title </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="./node_modules/typescript/lib/typescript.js"></script>
+    <script src="./node_modules/systemjs/dist/s.js"></script>
+    <script src="./node_modules/systemjs-babel/dist/systemjs-babel.js"></script>
+    <script type="systemjs-importmap">
+      {
+        "imports": {
+          "./src/core/canvas-2d":"./src/core/canvas-2d.ts"
+        }
+      }
+    </script>
+    <script>
+      // eslint-disable-next-line no-undef
+      System.import('./main.ts').then(null, console.error.bind(console));
+    </script>
+  </head>
 
-    <body>
-        <canvas id="canvas" width="800" height="600"></canvas>
-    </body>
+  <body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+  </body>
 
-    </html>
+  </html>
