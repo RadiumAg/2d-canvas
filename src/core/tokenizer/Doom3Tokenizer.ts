@@ -54,7 +54,11 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
         c = this._skipComments0();
       } else if (c === '/' && this._peekChar() === '*') {
         c = this._skipComments1();
-      }else if(this.)
+      } else if (c.length > 0) {
+        this._ungetChar();
+        this._getChar(token);
+        return true;
+      }
     } while (c.length > 0);
     return false;
   }
