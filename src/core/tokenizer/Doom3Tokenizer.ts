@@ -157,7 +157,7 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
   }
 
   private _getString(token: Doom3Token) {
-    const c = this._getChar();
+    let c = this._getChar();
     token.setType(ETokenType.STRING);
     do {
       token.addChar(c);
