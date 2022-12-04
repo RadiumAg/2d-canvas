@@ -10,13 +10,6 @@
     <script src="./node_modules/typescript/lib/typescript.js"></script>
     <script src="./node_modules/systemjs/dist/s.js"></script>
     <script src="./node_modules/systemjs-babel/dist/systemjs-babel.js"></script>
-    <script type="systemjs-importmap">
-      {
-        "imports": {
-          "./src/core/canvas-2d":"./src/core/canvas-2d.ts"
-        }
-      }
-    </script>
     <script>
       // eslint-disable-next-line no-undef
       System.import('./main.ts').then(null, console.error.bind(console));

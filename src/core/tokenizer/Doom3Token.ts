@@ -10,38 +10,6 @@ export class Doom3Token implements IDoom3Token {
   private _type: ETokenType;
   private _charArr: string[] = [];
   private _val: number;
-  private _digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-  private _whiteSpaces = ['', '\t', '\v', '\n'];
-
-  /**
-   * 判断字符是不是数字
-   *
-   * @private
-   * @param {string} c
-   * @return {*}
-   * @memberof Doom3Token
-   */
-  private _isDigit(c: string) {
-    for (let i = 0; i < this._digits.length; i++) {
-      if (c === this._digits[i]) return true;
-    }
-    return false;
-  }
-
-  /**
-   * 判断某个字符是不是空白符
-   *
-   * @private
-   * @param {string} c
-   * @return {*}
-   * @memberof Doom3Token
-   */
-  private _isWhitespace(c: string) {
-    for (let i = 0; i < this._whiteSpaces.length; i++) {
-      if (c === this._whiteSpaces[i]) return true;
-    }
-    return false;
-  }
 
   reset(): void {
     this._charArr.length = 0;
