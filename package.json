@@ -2,9 +2,10 @@
   "name": "2d-canvas",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "lite-server"
+    "dev": "vite"
   },
   "repository": {
     "type": "git",
@@ -20,8 +21,7 @@
     "@raag/eslint-config-vue": "^1.1.4",
     "eslint": "^8.28.0",
     "lite-server": "^2.6.1",
-    "systemjs": "^6.13.0",
-    "systemjs-babel": "^0.3.1",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.3",
+    "vite": "^3.2.5"
   }
 }
