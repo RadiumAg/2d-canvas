@@ -13,7 +13,7 @@ if (canvas === null) {
 const canvas2d = new Canvas2D(canvas);
 canvas2d.drawText('Hellow World');
 
-const input = '[3.14,-3.14,.14]';
+const input = '[3.14,-3.14,.14,-.14,3.,-3,+3.14]';
 const tokenizer = new Doom3Tokenizer();
 const token = new Doom3Token();
 tokenizer.setSource(input);

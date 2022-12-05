@@ -171,6 +171,22 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
     return ['(', ')', '[', ']', '{', '}', ',', '.'].includes(c);
   }
 
+  private _getSubString(token: Doom3Token, endChar: string) {
+    let end = false;
+    let c = '';
+    token.setType(ETokenType.STRING);
+
+    do {
+      c = this._getChar();
+      if (c === endChar) {
+        end = true;
+      } else {
+        token.addChar(c);
+      }
+    } while (c.length > 0 && c !== '\n' && !end);
+    return c;
+  }
+
   getNextToken(tok: IDoom3Token): boolean {
     const token = tok as Doom3Token;
     let c = '';
@@ -182,6 +198,17 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
         c = this._skipComments0();
       } else if (c === '/' && this._peekChar() === '*') {
         c = this._skipComments1();
+      } else if (c === '"' || c === "'") {
+        c = this._getSubString(token, c);
+        return true;
+      } else if (
+        this._isDigit(c) ||
+        c === '-' ||
+        (c === '.' && this._isDigit(this._peekChar()))
+      ) {
+        this._ungetChar();
+        this._getNumber(token);
+        return true;
       } else if (c.length > 0) {
         this._ungetChar();
         this._getString(token);
