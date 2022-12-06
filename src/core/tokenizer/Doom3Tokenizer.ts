@@ -3,6 +3,8 @@ import { ETokenType, IDoom3Token } from './IDoom3Token';
 import { IDoom3Tokenizer } from './IDoom3Tokenizer';
 
 export class Doom3Tokenizer implements IDoom3Tokenizer {
+  public _current: IDoom3Token = new Doom3Token();
+
   private _source = 'Doom3Tokenizer';
   private _currIdx = 0;
   private _digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -15,6 +17,14 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
 
   reset(): void {
     this._currIdx = 0;
+  }
+
+  moveNext(): boolean {
+    return this.getNextToken(this._current);
+  }
+
+  public get current() {
+    return this._current;
   }
 
   private _getChar() {
@@ -69,8 +79,8 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
       if (c === '.') {
         isFloat = true;
       } else if (c !== '-') {
-        const ascii: number = c.charCodeAt(0);
-        const vc: number = ascii - ascii0;
+        const ascii = c.charCodeAt(0);
+        const vc = ascii - ascii0;
 
         if (!isFloat) {
           val = 10 * val + vc;
@@ -84,9 +94,10 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
 
       if (consumed === true) {
         this._getChar();
-        c = this._peekChar();
-        consumed = true;
       }
+
+      c = this._peekChar();
+      consumed = true;
     } while ((c.length > 0 && this._isDigit(c)) || (!isFloat && c === '.'));
 
     if (isNegate) {
@@ -187,20 +198,16 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
     return c;
   }
 
-  getNextToken(tok: IDoom3Token): boolean {
-    const token = tok as Doom3Token;
+  private getNextToken(tok: IDoom3Token): boolean {
     let c = '';
+    const token = tok as Doom3Token;
     token.reset();
-
     do {
       c = this._skipWhitespace();
       if (c === '/' && this._peekChar() === '/') {
         c = this._skipComments0();
       } else if (c === '/' && this._peekChar() === '*') {
         c = this._skipComments1();
-      } else if (c === '"' || c === "'") {
-        c = this._getSubString(token, c);
-        return true;
       } else if (
         this._isDigit(c) ||
         c === '-' ||
@@ -209,6 +216,9 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
         this._ungetChar();
         this._getNumber(token);
         return true;
+      } else if (c === '"' || c === "'") {
+        this._getSubString(token, c);
+        return true;
       } else if (c.length > 0) {
         this._ungetChar();
         this._getString(token);
@@ -216,5 +226,9 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
       }
     } while (c.length > 0);
     return false;
+  }
+
+  createIDoom3Token() {
+    return new Doom3Token();
   }
 }
