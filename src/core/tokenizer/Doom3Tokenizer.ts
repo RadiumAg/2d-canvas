@@ -8,7 +8,7 @@ export class Doom3Tokenizer implements IDoom3Tokenizer {
   private _source = 'Doom3Tokenizer';
   private _currIdx = 0;
   private _digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-  private _whiteSpaces = ['', '\t', '\v', '\n'];
+  private _whiteSpaces = ['', '\t', '\v', '\n', '\r'];
 
   setSource(source: string) {
     this._source = source;
