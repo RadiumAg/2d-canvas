@@ -3,7 +3,7 @@ import { ETokenType, IDoom3Token } from './IDoom3Token';
 import { IDoom3Tokenizer } from './IDoom3Tokenizer';
 
 export class Doom3Tokenizer implements IDoom3Tokenizer {
-  public _current: IDoom3Token = new Doom3Token();
+  public _current = new Doom3Token();
 
   private _source = 'Doom3Tokenizer';
   private _currIdx = 0;

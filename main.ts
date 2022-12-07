@@ -8,8 +8,9 @@ const tokenizer = new Doom3Tokenizer();
 const token = new Doom3Token();
 tokenizer.setSource(input);
 
-while (tokenizer.getNextToken(token)) {
-  if (token.type === ETokenType.NUMBER) {
+while (tokenizer.moveNext()) {
+  console.log(token);
+  if (tokenizer.current.type === ETokenType.NUMBER) {
     console.log(`NUMBER：${token.getFloat()}`);
   } else {
     console.log(`STRING：${token.getFloat()}`);
