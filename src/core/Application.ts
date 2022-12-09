@@ -1,8 +1,9 @@
+import { CanvasKeyBoardEvent, CanvasMouseEvent } from './CanvasKeyBoardEvent';
 let start = 0;
 let lastTime = 0;
 let count = 0;
 
-export class Application {
+export class Application implements EventListenerObject {
   // 标记当前Application是否进入不间断地循环状态
   protected _start = false;
   // 可以使用cancelAnimateionFrame(this._requestId)来取消动画循环
@@ -10,6 +11,22 @@ export class Application {
   //基于时间的物理更新
   protected _lastTime!: number;
   protected _startTime!: number;
+  public isSupoortMouseMove: boolean;
+  protected _isMouseDown: boolean;
+  protected canvas: HTMLCanvasElement;
+
+  public constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.canvas.addEventListener('mousedown', this, false);
+    this.canvas.addEventListener('mouseup', this, false);
+    this.canvas.addEventListener('mousemove', this, false);
+
+    window.addEventListener('keydown', this, false);
+    window.addEventListener('keyup', this, false);
+    window.addEventListener('keypress', this, false);
+    this._isMouseDown = false;
+    this.isSupoortMouseMove = false;
+  }
 
   public start() {
     if (!this._start) {
@@ -33,11 +50,42 @@ export class Application {
     }
   }
 
+  update(elapsedMesc: number, intervalSec: number) {}
+
+  handleEvent(evt: Event): void {
+    switch (evt.type) {
+      case 'mousedown':
+        this._isMouseDown = true;
+        this.dispatchMouseDown = this._toCanvasMouseEvent(evt);
+        break;
+
+      case 'mousemove':
+        if (this.isSupoortMouseMove) {
+          this.dispatchMouseMove(this._toCanvasMouseEvent(evt));
+        }
+
+        if (this._isMouseDown) {
+          this.dispatchMouseDrag(this._toCanvasMouseEvent(evt));
+        }
+        break;
+
+      case 'keypress':
+        this.dispatchKeyPress(this._toCanvasKeyBoardEvent(evt));
+        break;
+
+      case 'keydown':
+        this.dispatchKeyDown(this._toCanvasKeyBoardEvent(evt));
+        break;
+
+      case 'keyup':
+        this.dispatchKeyUp(this._toCanvasKeyBoardEvent(evt));
+        break;
+    }
+  }
+
   public isRunning() {
     return this._start;
   }
-
-  update(elapsedMesc: number, intervalSec: number) {}
 
   public render(): void {}
 
@@ -67,5 +115,49 @@ export class Application {
     requestAnimationFrame((elapsedMsec: number) => {
       this.step(elapsedMsec);
     });
+  }
+
+  private _viewportToCanvasCoordinate(evt: MouseEvent): vec2 {
+    if (this.canvas) {
+      const react = this.canvas.getBoundingClientRect();
+
+      if (evt.type === 'mousedown') {
+        console.log(`boundingClientRect${JSON.stringify(react)}`);
+        console.log(`clientX:${evt.clientX}ClientY:${evt.clientY}`);
+      }
+
+      const x = (evt.clientX = react.left);
+      const y = (evt.clientY = react.top);
+      return vec2.create(x, y);
+    }
+
+    alert('canvas为null');
+    throw new Error('canvas为null');
+  }
+
+  private _toCanvasMouseEvent(evt: Event): CanvasMouseEvent {
+    const event = evt as MouseEvent;
+
+    const mousePosition = this._viewportToCanvasCoordinate(event);
+    const canvasMouseEvent = new CanvasMouseEvent(
+      mousePosition.event.button,
+      event.altKey,
+      event.shiftKey,
+    );
+
+    return canvasMouseEvent;
+  }
+
+  private _toCanvasKeyBoardEvent(evt: Event): CanvasKeyBoardEvent {
+    const event = evt as KeyboardEvent;
+    const canvasKeyboardEvent = new CanvasKeyBoardEvent(
+      event.key,
+      event.keyCode,
+      event.altKey,
+      event.ctrlKey,
+      event.shiftKey,
+    );
+
+    return canvasKeyboardEvent;
   }
 }
