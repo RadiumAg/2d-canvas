@@ -1,12 +1,13 @@
 export enum EInputEventType {
-  MOUSEEVENT, // 鼠标事件
-  MOUSEDOWN, //鼠标按下事件
-  MOUSEUP, //鼠标弹起事件
-  MOUSEDRAG, //鼠标拖动事件
-  KEYBOARDEVENT, //总类，表示键盘事件
-  KEYUP, // 键弹起事件
-  KEYDOWN, // 键按下事件
-  KEYPRESS, //按键事件
+  MOUSEEVENT,
+  MOUSEDOWN,
+  MOUSEUP,
+  MOUSEMOVE,
+  MOUSEDRAG,
+  KEYBOARDEVENT,
+  KEYUP,
+  KEYDOWN,
+  KEYPRESS,
 }
 
 export class CanvasInputEvent {
