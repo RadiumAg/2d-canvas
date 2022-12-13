@@ -5,6 +5,23 @@ let start = 0;
 let lastTime = 0;
 let count = 0;
 
+export type TimerCallback = (id: number, data: any) => void;
+
+export class Timer {
+  public id = -1;
+  public enabled = false;
+  public callback: TimerCallback;
+  public callbackData: any = undefined;
+
+  public countdown = 0;
+  public timeout = 0;
+  public onlyOnce = false;
+
+  constructor(callback: TimerCallback) {
+    this.callback = callback;
+  }
+}
+
 export class Application implements EventListenerObject {
   // 标记当前Application是否进入不间断地循环状态
   protected _start = false;
@@ -16,6 +33,9 @@ export class Application implements EventListenerObject {
   public isSupportMouseMove: boolean;
   protected _isMouseDown: boolean;
   protected canvas: HTMLCanvasElement;
+  public timers: Timer[] = [];
+  private _timeId = 1;
+
   protected dispatchMouseDown(evt: CanvasMouseEvent): void {
     return;
   }
@@ -43,7 +63,8 @@ export class Application implements EventListenerObject {
   protected dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
     return;
   }
-  public constructor(canvas: HTMLCanvasElement) {
+
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.canvas.addEventListener('mousedown', this, false);
     this.canvas.addEventListener('mouseup', this, false);
@@ -56,7 +77,7 @@ export class Application implements EventListenerObject {
     this.isSupportMouseMove = false;
   }
 
-  public start() {
+  start() {
     if (!this._start) {
       this._start = true;
       this._requestIdId = -1;
@@ -68,7 +89,7 @@ export class Application implements EventListenerObject {
     }
   }
 
-  public stop() {
+  stop() {
     if (this._start) {
       cancelAnimationFrame(this._requestIdId);
       this._requestIdId = -1;
@@ -79,6 +100,55 @@ export class Application implements EventListenerObject {
   }
 
   update(elapsedMesc: number, intervalSec: number) {}
+
+  addTimer(
+    callback: TimerCallback,
+    timeout = 1.0,
+    onlyOnce = false,
+    data: any,
+  ) {
+    let timer: Timer;
+
+    for (let i = 0; i < this.timers.length; i++) {
+      const timer = this.timers[i];
+      if (timer.enabled === false) {
+        timer.callback = callback;
+        timer.callbackData = data;
+        timer.timeout = timeout;
+        timer.countdown = timeout;
+        timer.enabled = true;
+        timer.onlyOnce = onlyOnce;
+        return timer.id;
+      }
+    }
+
+    timer = new Timer(callback);
+    timer.callbackData = data;
+    timer.timeout = timeout;
+    timer.countdown = timeout;
+    timer.enabled = true;
+    timer.onlyOnce = onlyOnce;
+    timer.id = ++this._timeId;
+
+    this.timers.push(timer);
+    return timer.id;
+  }
+
+  removeTimer(id: number): boolean {
+    let found = false;
+    for (let i = 0; i < this.timers.length; i++) {
+      if (this.timers[i].id === id) {
+        const timer = this.timers[i];
+        timer.enabled = false;
+        found = true;
+        break;
+      }
+    }
+
+    return found;
+  }
+
+  private _handleTimers() {}
 
   handleEvent(evt: Event): void {
     switch (evt.type) {
