@@ -1,4 +1,5 @@
 import { Application } from './Application';
+
 export class Canvas2DApplication extends Application {
   public context2D: CanvasRenderingContext2D | null;
 
