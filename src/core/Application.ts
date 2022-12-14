@@ -1,9 +1,6 @@
 import { EInputEventType } from './CanvasInputEvent';
 import { CanvasKeyBoardEvent, CanvasMouseEvent } from './CanvasKeyBoardEvent';
 import { vec2 } from './math2d';
-let start = 0;
-let lastTime = 0;
-let count = 0;
 
 export type TimerCallback = (id: number, data: any) => void;
 
@@ -35,34 +32,7 @@ export class Application implements EventListenerObject {
   protected canvas: HTMLCanvasElement;
   public timers: Timer[] = [];
   private _timeId = 1;
-
-  protected dispatchMouseDown(evt: CanvasMouseEvent): void {
-    return;
-  }
-
-  protected dispatchMouseUp(evt: CanvasMouseEvent): void {
-    return;
-  }
-
-  protected dispatchMouseMove(evt: CanvasMouseEvent): void {
-    return;
-  }
-
-  protected dispatchMouseDrag(evt: CanvasMouseEvent): void {
-    return;
-  }
-
-  protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
-    return;
-  }
-
-  protected dispatchKeyUp(evt: CanvasKeyBoardEvent): void {
-    return;
-  }
-
-  protected dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
-    return;
-  }
+  private _fps = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -84,7 +54,7 @@ export class Application implements EventListenerObject {
       this._lastTime = -1;
       this._startTime - 1;
       this._requestIdId = requestAnimationFrame(elapsedMsec => {
-        this.setup(elapsedMsec);
+        this.step(elapsedMsec);
       });
     }
   }
@@ -101,6 +71,10 @@ export class Application implements EventListenerObject {
 
   update(elapsedMesc: number, intervalSec: number) {}
 
+  get fps() {
+    return this._fps;
+  }
+
   addTimer(
     callback: TimerCallback,
     timeout = 1.0,
@@ -110,7 +84,7 @@ export class Application implements EventListenerObject {
     let timer: Timer;
 
     for (let i = 0; i < this.timers.length; i++) {
-      const timer = this.timers[i];
+      timer = this.timers[i];
       if (timer.enabled === false) {
         timer.callback = callback;
         timer.callbackData = data;
@@ -148,7 +122,33 @@ export class Application implements EventListenerObject {
     return found;
   }
 
-  private _handleTimers() {}
+  protected dispatchMouseDown(evt: CanvasMouseEvent): void {
+    return;
+  }
+
+  protected dispatchMouseUp(evt: CanvasMouseEvent): void {
+    return;
+  }
+
+  protected dispatchMouseMove(evt: CanvasMouseEvent): void {
+    return;
+  }
+
+  protected dispatchMouseDrag(evt: CanvasMouseEvent): void {
+    return;
+  }
+
+  protected dispatchKeyDown(evt: CanvasKeyBoardEvent): void {
+    return;
+  }
+
+  protected dispatchKeyUp(evt: CanvasKeyBoardEvent): void {
+    return;
+  }
+
+  protected dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
+    return;
+  }
 
   handleEvent(evt: Event): void {
     switch (evt.type) {
@@ -195,23 +195,31 @@ export class Application implements EventListenerObject {
     }
   }
 
-  public isRunning() {
+  isRunning() {
     return this._start;
   }
 
-  public render(): void {}
+  render(): void {
+    console.log('render');
+  }
 
-  setup(timestamp: number) {
-    if (!start) start = timestamp;
-    if (!lastTime) lastTime = timestamp;
+  private _handleTimers(intervalSec: number) {
+    for (let i = 0; i < this.timers.length; i++) {
+      const timer = this.timers[i];
+      if (timer.enabled === false) {
+        continue;
+      }
+      timer.countdown -= intervalSec;
 
-    const elapsedMsec = timestamp - start;
-    const intervalMsec = timestamp - lastTime;
-    lastTime = timestamp;
-    count++;
-    console.log(`${count}timestamp=${timestamp}`);
-    console.log(`${count}elapsedMsec=${elapsedMsec}`);
-    console.log(`${count}intervalMsec=${intervalMsec}`);
+      if (timer.countdown < 0.0) {
+        timer.callback(timer.id, timer.callbackData);
+        if (timer.onlyOnce === false) {
+          timer.countdown = timer.timeout;
+        } else {
+          this.removeTimer(timer.id);
+        }
+      }
+    }
   }
 
   protected step(timeStamp: number) {
@@ -219,14 +227,16 @@ export class Application implements EventListenerObject {
     if (this._lastTime === -1) this._lastTime = timeStamp;
 
     const elapsedMsec = timeStamp - this._startTime;
-    const intervalSec = (timeStamp - this._lastTime) / 1000.0;
+    let intervalSec = timeStamp - this._lastTime;
+    if (intervalSec !== 0) {
+      this._fps === 1000.0 / intervalSec;
+    }
+    intervalSec /= 1000.0;
     this._lastTime = timeStamp;
-    console.log(`elapsedTime = ${elapsedMsec}intervalSec =${intervalSec}`);
+    this._handleTimers(intervalSec);
     this.update(elapsedMsec, intervalSec);
     this.render();
-    requestAnimationFrame((elapsedMsec: number) => {
-      this.step(elapsedMsec);
-    });
+    requestAnimationFrame(this.step.bind(this));
   }
 
   private _viewportToCanvasCoordinate(evt: MouseEvent): vec2 {
@@ -242,8 +252,6 @@ export class Application implements EventListenerObject {
       const y = evt.clientY - react.top;
       return vec2.create(x, y);
     }
-
-    alert('canvas为null');
     throw new Error('canvas为null');
   }
 
