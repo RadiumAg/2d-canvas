@@ -1,6 +1,9 @@
-import { EInputEventType } from './CanvasInputEvent';
-import { CanvasKeyBoardEvent, CanvasMouseEvent } from './CanvasKeyBoardEvent';
-import { vec2 } from './math2d';
+import { EInputEventType } from './canvas/CanvasInputEvent';
+import {
+  CanvasKeyBoardEvent,
+  CanvasMouseEvent,
+} from './canvas/CanvasKeyBoardEvent';
+import { vec2 } from './canvas/math2d';
 
 export type TimerCallback = (id: number, data: any) => void;
 
@@ -9,7 +12,6 @@ export class Timer {
   public enabled = false;
   public callback: TimerCallback;
   public callbackData: any = undefined;
-
   public countdown = 0;
   public timeout = 0;
   public onlyOnce = false;

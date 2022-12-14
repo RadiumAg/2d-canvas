@@ -1,5 +1,5 @@
-import { CanvasInputEvent, EInputEventType } from './CanvasInputEvent';
 import { vec2 } from './math2d';
+import { CanvasInputEvent, EInputEventType } from './CanvasInputEvent';
 
 export class CanvasMouseEvent extends CanvasInputEvent {
   public button: number;
