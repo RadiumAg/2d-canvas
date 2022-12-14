@@ -1,8 +1,5 @@
 import { EInputEventType } from './CanvasInputEvent';
-import {
-  CanvasKeyBoardEvent,
-  CanvasMouseEvent,
-} from './CanvasKeyBoardEvent';
+import { CanvasKeyBoardEvent, CanvasMouseEvent } from './CanvasKeyBoardEvent';
 import { vec2 } from './math2d';
 
 export type TimerCallback = (id: number, data: any) => void;
