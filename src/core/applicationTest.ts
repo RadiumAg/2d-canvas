@@ -118,7 +118,7 @@ export class ApplicationTest extends Canvas2DApplication {
     }
   }
 
-  fillRadialRect(x: number, y: number, w: number, h: number) {
+  fillRadialRect(x: number, y: number, w: numbers, h: number) {
     if (this.context2D !== null) {
       this.context2D.save();
       if (this._radialGradient === undefined) {
@@ -189,7 +189,25 @@ export class ApplicationTest extends Canvas2DApplication {
 
   timeCallback(id: number, data: any) {
     this._updateLineDashOffset();
-    this.fillPatternRect(0, 0, 300, 400);
+  }
+
+  strokeGrid(color = 'grey', interval = 10) {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.strokeStyle = color;
+      this.context2D.lineWidth = 0.5;
+      for (let i = interval + 0.5; i < this.canvas.width; i += interval) {
+        this.strokeLine(i, 0, i, this.canvas.height);
+      }
+
+      for (let i = interval + 0.5; i < this.canvas.height; i += interval) {
+        this.strokeLine(0, i, this.canvas.width, i);
+      }
+
+      this.context2D.restore();
+      this.fillCircle(0, 0, 5, 'green');
+      this.strokeCoord(0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 
   start(): void {
