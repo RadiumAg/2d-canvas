@@ -1,6 +1,18 @@
+import { ETextLayout } from './canvas/Application';
 import { Canvas2DApplication } from './canvas/Canvas2DApplication';
+import { Rectangle, Size, vec2 } from './canvas/math2d';
 
 type Repeatition = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+
+type TextAlign = 'start' | 'left' | 'center' | 'right' | 'end';
+
+type TextBaseline = 'alphabetic' | 'hanging' | 'top' | 'middle' | 'bottom';
+
+type FontType =
+  | '10px sans-serif'
+  | '15px sans-serif'
+  | '20px sans-serif'
+  | '25px sans-serif';
 
 export class ApplicationTest extends Canvas2DApplication {
   private _lineDashOffset = 0;
@@ -19,6 +31,79 @@ export class ApplicationTest extends Canvas2DApplication {
     // }
     // this._drawRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
   }
+
+  calcTextSize(text: string, char = 'W', scale = 0.5) {
+    if (this.context2D !== null) {
+      const size = new Size();
+      size.width = this.context2D.measureText(text).width;
+      const w = this.context2D.measureText(char).width;
+      size.height = w + w * scale;
+      return size;
+    }
+    throw new Error('context2D 渲染上下文为null');
+  }
+
+  calcLocalTextRectangle(
+    layout: ETextLayout,
+    text: string,
+    parentWidth: number,
+    parentHeight: number,
+  ) {
+    const s = this.calcTextSize(text);
+    const o = vec2.create();
+    const left = 0;
+    const top = 0;
+    const right = parentWidth - s.width;
+    const bottom = parentHeight - s.height;
+    const center = right * 0.5;
+    const middle = bottom * 0.5;
+
+    switch (layout) {
+      case ETextLayout.LEFT_TOP:
+        o.x = left;
+        o.y = top;
+        break;
+
+      case ETextLayout.RIGHT_TOP:
+        o.x = right;
+        o.y = top;
+        break;
+
+      case ETextLayout.RIGHT_BOTTOM:
+        o.x = right;
+        o.y = bottom;
+        break;
+
+      case ETextLayout.CENTER_MIDDLE:
+        o.x = center;
+        o.y = middle;
+        break;
+
+      case ETextLayout.CENTER_TOP:
+        o.x = center;
+        o.y = 0;
+        break;
+
+      case ETextLayout.RIGHT_MIDDLE:
+        o.x = right;
+        o.y = middle;
+        break;
+
+      case ETextLayout.CENTER_BOTTOM:
+        o.x = center;
+        o.y = bottom;
+        break;
+
+      case ETextLayout.LEFT_MIDDLE:
+        o.x = left;
+        o.y = middle;
+        break;
+    }
+
+    return new Rectangle(o, s);
+  }
+
+  fillRectWithText() {}
 
   fillLinearRect(x: number, y: number, w: number, h: number) {
     if (this.context2D !== null) {
@@ -73,6 +158,26 @@ export class ApplicationTest extends Canvas2DApplication {
         this.context2D.rect(x, y, w, h);
         this.context2D.fill();
       }
+      this.context2D.restore();
+    }
+  }
+
+  fillText(
+    text: string,
+    x: number,
+    y: number,
+    color = 'white',
+    align: TextAlign = 'left',
+    baseline: TextBaseline = 'top',
+    font: FontType = '10px sans-serif',
+  ) {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.textAlign = align;
+      this.context2D.font = font;
+      this.context2D.textBaseline = baseline;
+      this.context2D.fillStyle = color;
+      this.context2D.fillText(text, x, y);
       this.context2D.restore();
     }
   }
@@ -189,6 +294,7 @@ export class ApplicationTest extends Canvas2DApplication {
 
   timeCallback(id: number, data: any) {
     this._updateLineDashOffset();
+    this.strokeGrid();
   }
 
   strokeGrid(color = 'grey', interval = 10) {

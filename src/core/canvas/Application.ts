@@ -4,6 +4,18 @@ import { vec2 } from './math2d';
 
 export type TimerCallback = (id: number, data: any) => void;
 
+export enum ETextLayout {
+  LEFT_TOP,
+  RIGHT_TOP,
+  RIGHT_BOTTOM,
+  LEFT_BOTTOM,
+  CENTER_MIDDLE,
+  CENTER_TOP,
+  RIGHT_MIDDLE,
+  CENTER_BOTTOM,
+  LEFT_MIDDLE,
+}
+
 export class Timer {
   public id = -1;
   public enabled = false;
