@@ -129,6 +129,15 @@ export class ApplicationTest extends Canvas2DApplication {
     }
   }
 
+  fillRectWithTitle(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    title = '',
+    layout: ETextLayout = ETextLayout.CENTER_MIDDLE,
+  ) {}
+
   fillPatternRect(
     x: number,
     y: number,
