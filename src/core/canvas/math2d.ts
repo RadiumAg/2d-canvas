@@ -1,4 +1,5 @@
-import { IEnumerator } from './IEnumerator';
+import { IEnumerator } from '../tokenizer/IEnumerator';
+
 const EPSILON = 0.00001;
 const PiBy180 = 0.017453292519943295;
 export class vec2 {

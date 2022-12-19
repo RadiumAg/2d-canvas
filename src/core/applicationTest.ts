@@ -8,6 +8,46 @@ type TextAlign = 'start' | 'left' | 'center' | 'right' | 'end';
 
 type TextBaseline = 'alphabetic' | 'hanging' | 'top' | 'middle' | 'bottom';
 
+type FontStyle = 'normal' | 'italic' | 'oblique';
+
+type FontVariant = 'normal' | 'small-caps';
+
+type FontWeight =
+  | 'normal'
+  | 'bold'
+  | 'bolder'
+  | 'lighter'
+  | '100'
+  | '200'
+  | '300'
+  | '400'
+  | '500'
+  | '600'
+  | '700'
+  | '800'
+  | '900';
+
+type FontSize =
+  | '10px'
+  | '12px'
+  | '16px'
+  | '18px'
+  | '24px'
+  | '50%'
+  | '75%'
+  | '100%'
+  | '125%'
+  | '150%'
+  | 'xx-small'
+  | 'x-small'
+  | 'small'
+  | 'medium'
+  | 'large'
+  | 'x-large'
+  | 'xx-large';
+
+type FontFamily = 'sans-serif' | 'serif' | 'courier' | 'fantasy' | 'monospace';
+
 type FontType =
   | '10px sans-serif'
   | '15px sans-serif'
@@ -59,6 +99,11 @@ export class ApplicationTest extends Canvas2DApplication {
     const middle = bottom * 0.5;
 
     switch (layout) {
+      case ETextLayout.LEFT_BOTTOM:
+        o.x = left;
+        o.y = bottom;
+        break;
+
       case ETextLayout.LEFT_TOP:
         o.x = left;
         o.y = top;
@@ -103,7 +148,91 @@ export class ApplicationTest extends Canvas2DApplication {
     return new Rectangle(o, s);
   }
 
-  fillRectWithText() {}
+  strokeRect(x: number, y: number, w: number, h: number, color = 'black') {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.strokeStyle = color;
+      this.context2D.beginPath();
+      this.context2D.moveTo(x, y);
+      this.context2D.lineTo(x + w, y);
+      this.context2D.lineTo(x + w, y + h);
+      this.context2D.lineTo(x, y + h);
+      this.context2D.closePath();
+      this.context2D.stroke();
+      this.context2D.restore();
+    }
+  }
+
+  loadAndDrawImage(url: string) {
+    const img = document.createElement('img') as HTMLImageElement;
+    img.src = url;
+
+    img.addEventListener('load', () => {
+      if (this.context2D !== null) {
+        console.log(`${url}尺寸为[${img.width},${img.height}]`);
+        this.context2D.drawImage(img, 10, 10);
+        this.context2D.drawImage(img, img.width + 30, 10, 200, img.height);
+        this.context2D.drawImage(
+          img,
+          44,
+          6,
+          162,
+          175,
+          200,
+          img.height + 300,
+          200,
+          130,
+        );
+      }
+    });
+  }
+
+  fillRectWithTitle(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    title = '',
+    layout = ETextLayout.CENTER_BOTTOM,
+    color = 'grey',
+    showCoord = true,
+  ) {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.fillStyle = color;
+      this.context2D.beginPath();
+      this.context2D.rect(x, y, width, height);
+      this.context2D.fill();
+
+      if (title.length > 0) {
+        const rect = this.calcLocalTextRectangle(layout, title, width, height);
+        this.fillText(
+          title,
+          x + rect.origin.x,
+          y + rect.origin.y,
+          'white',
+          'left',
+          'top',
+          '10px sans-serif',
+        );
+
+        this.strokeRect(
+          x + rect.origin.x,
+          y + rect.origin.y,
+          rect.size.width,
+          rect.size.height,
+          'rgba(0,0,0,0.5)',
+        );
+
+        this.fillCircle(x + rect.origin.x, y + rect.origin.y, 2);
+
+        if (showCoord) {
+          this.strokeCoord(x, y, width + 20, height + 20);
+        }
+        this.context2D.restore();
+      }
+    }
+  }
 
   fillLinearRect(x: number, y: number, w: number, h: number) {
     if (this.context2D !== null) {
@@ -129,14 +258,144 @@ export class ApplicationTest extends Canvas2DApplication {
     }
   }
 
-  fillRectWithTitle(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    title = '',
-    layout: ETextLayout = ETextLayout.CENTER_MIDDLE,
-  ) {}
+  public makeFontString(
+    size: FontSize = '10px',
+    weight: FontWeight = 'normal',
+    style: FontStyle = 'normal',
+    variant: FontVariant = 'normal',
+    family: FontFamily = 'sans-serif',
+  ): string {
+    const strs: string[] = [];
+    strs.push(style, variant, weight, size, family);
+    const ret: string = strs.join(' ');
+    console.log(ret);
+    return ret;
+  }
+
+  testMyTextLayout(
+    font: string = this.makeFontString(
+      '10px',
+      'normal',
+      'normal',
+      'normal',
+      'sans-serif',
+    ),
+  ) {
+    const x = 20;
+    const y = 20;
+    const width: number = this.canvas.width - x * 2;
+    const height: number = this.canvas.height - y * 2;
+    const right: number = x + width;
+    const bottom: number = y + height;
+
+    let drawX: number = x;
+    let drawY: number = y;
+    const drawWidth = 150;
+    const drawHeight = 50;
+
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.font = font;
+      this.fillRectWithTitle(x, y, width, height);
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'left-top',
+        ETextLayout.LEFT_TOP,
+        'rgba( 255 , 255 , 0 , 0.2 )',
+      );
+      drawX = right - drawWidth;
+      drawY = y;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'right-top',
+        ETextLayout.RIGHT_TOP,
+        'rgba( 255 , 255 , 0 , 0.2 )',
+      );
+      drawX = right - drawWidth;
+      drawY = bottom - drawHeight;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'right-bottom',
+        ETextLayout.RIGHT_BOTTOM,
+        'rgba( 255 , 255 , 0 , 0.2 )',
+      );
+      drawX = x;
+      drawY = bottom - drawHeight;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'left-bottom',
+        ETextLayout.LEFT_BOTTOM,
+        'rgba( 255 , 255 , 0 , 0.2 )',
+      );
+      drawX = (right - drawWidth) * 0.5;
+      drawY = (bottom - drawHeight) * 0.5;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'center-middle',
+        ETextLayout.CENTER_MIDDLE,
+        'rgba( 255 , 0 , 0 , 0.2 )',
+      );
+      drawX = (right - drawWidth) * 0.5;
+      drawY = y;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'center-top',
+        ETextLayout.CENTER_TOP,
+        'rgba( 0 , 255 , 0 , 0.2 )',
+      );
+      drawX = right - drawWidth;
+      drawY = (bottom - drawHeight) * 0.5;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'right-middle',
+        ETextLayout.RIGHT_MIDDLE,
+        'rgba( 0 , 255 , 0 , 0.2 )',
+      );
+      drawX = (right - drawWidth) * 0.5;
+      drawY = bottom - drawHeight;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'center-bottom',
+        ETextLayout.CENTER_BOTTOM,
+        'rgba( 0 , 255 , 0 , 0.2 )',
+      );
+      drawX = x;
+      drawY = (bottom - drawHeight) * 0.5;
+      this.fillRectWithTitle(
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
+        'left-middle',
+        ETextLayout.LEFT_MIDDLE,
+        'rgba( 0 , 255 , 0 , 0.2 )',
+      );
+    }
+  }
 
   fillPatternRect(
     x: number,
