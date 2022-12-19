@@ -16,6 +16,12 @@ export enum ETextLayout {
   LEFT_MIDDLE,
 }
 
+export enum EImageFillType {
+  STRETCH, // 拉伸模式
+  REPEAT, // xy重复填充模式
+  REPEAT_X, //x方向重复填充
+}
+
 export class Timer {
   public id = -1;
   public enabled = false;
