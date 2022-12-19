@@ -1,4 +1,4 @@
-import { ETextLayout } from './canvas/Application';
+import { EImageFillType, ETextLayout } from './canvas/Application';
 import { Canvas2DApplication } from './canvas/Canvas2DApplication';
 import { Rectangle, Size, vec2 } from './canvas/math2d';
 
@@ -70,6 +70,38 @@ export class ApplicationTest extends Canvas2DApplication {
     //   );
     // }
     // this._drawRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
+  }
+
+  drawImage(
+    img: HTMLImageElement,
+    destRect: Rectangle,
+    srcRect = Rectangle.create(0, 0, img.width, img.height),
+    fillType: EImageFillType.STRETCH,
+  ) {
+    if (this.context2D === null) {
+      return false;
+    }
+    if (srcRect.isEmpty()) {
+      return false;
+    }
+
+    if (destRect.isEmpty()) {
+      return false;
+    }
+
+    if (fillType === EImageFillType.STRETCH) {
+      this.context2D.drawImage(
+        img,
+        srcRect.origin.x,
+        srcRect.origin.y,
+        srcRect.size.width,
+        srcRect.size.height,
+        destRect.origin.x,
+        destRect.origin.y,
+        destRect.size.width,
+        destRect.size.height,
+      );
+    }
   }
 
   calcTextSize(text: string, char = 'W', scale = 0.5) {
