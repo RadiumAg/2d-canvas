@@ -72,6 +72,21 @@ export class ApplicationTest extends Canvas2DApplication {
     // this._drawRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
   }
 
+  fillRectangleWithColor(rect: Rectangle, color: string) {
+    if (rect.isEmpty()) return;
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.fillStyle = color;
+      this.context2D.fillRect(
+        rect.origin.x,
+        rect.origin.y,
+        rect.size.width,
+        rect.size.height,
+      );
+      this.context2D.restore();
+    }
+  }
+
   drawImage(
     img: HTMLImageElement,
     destRect: Rectangle,
@@ -101,6 +116,25 @@ export class ApplicationTest extends Canvas2DApplication {
         destRect.size.width,
         destRect.size.height,
       );
+    } else {
+      this.fillRectangleWithColor(destRect, 'grey');
+      let rows = Math.ceil(destRect.size.width / srcRect.size.height);
+      let columns = Math.ceil(destRect.size.height / srcRect.size.height);
+      const left = 0;
+      const top = 0;
+      const right = 0;
+      const bottom = 0;
+      const width = 0;
+      const height = 0;
+      const destRight = destRect.origin.x + destRect.size.width;
+      const destBottom = destRect.origin.y + destRect.size.height;
+      if (fillType === EImageFillType.REPEAT_X) {
+        columns = 1;
+      } else if (fillType === EImageFillType.REPEAT_Y) {
+        rows = 1;
+      }
+
+      for (){}
     }
   }
 
