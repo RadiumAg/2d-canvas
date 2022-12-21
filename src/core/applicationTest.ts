@@ -92,6 +92,41 @@ export class ApplicationTest extends Canvas2DApplication {
     'white', //白色
   ];
 
+  setShadowState(
+    shadowBlur = 5,
+    showColor = 'rgba(127,127,127,0.5)',
+    shadowOffsetX = 10,
+    shadowOffsetY = 10,
+  ) {
+    if (this.context2D !== null) {
+      this.context2D.shadowBlur = shadowBlur;
+      this.context2D.shadowColor = showColor;
+      this.context2D.shadowOffsetX = shadowOffsetX;
+      this.context2D.shadowOffsetY = shadowOffsetY;
+    }
+  }
+
+  testChangePartCanvasImageData(
+    rRow = 2,
+    rColum = 0,
+    cRow = 1,
+    cColumn = 0,
+    size = 32,
+  ) {
+    const colorCanvas = this.getColorCanvas(size);
+    const context = colorCanvas.getContext('2d');
+    if (context === null) {
+      throw new Error('Canvas获取渲染上下文失败!');
+    }
+
+    this.drawImage(
+      colorCanvas,
+      Rectangle.create(100, 100, colorCanvas.width, colorCanvas.height),
+      null,
+      null,
+    );
+  }
+
   getColorCanvas(amount = 32) {
     const step = 4;
     const canvas = document.createElement('canvas') as HTMLCanvasElement;
