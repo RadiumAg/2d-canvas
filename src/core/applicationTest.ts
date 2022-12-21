@@ -72,6 +72,56 @@ export class ApplicationTest extends Canvas2DApplication {
     // this._drawRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
   }
 
+  public static Colors = [
+    'aqua', //浅绿色
+    'black', //黑色
+    'blue', //蓝色
+    'fuchsia', //紫红色
+    'gray', //灰色
+    'green', //绿色
+    'lime', //绿黄色
+    'maroon', //褐红色
+    'navy', //海军蓝
+    'olive', //橄榄色
+    'orange', //橙色
+    'purple', //紫色
+    'red', //红色
+    'silver', //银灰色
+    'teal', //蓝绿色
+    'yellow', //黄色
+    'white', //白色
+  ];
+
+  getColorCanvas(amount = 32) {
+    const step = 4;
+    const canvas = document.createElement('canvas') as HTMLCanvasElement;
+    canvas.width = amount * step;
+    canvas.height = amount * step;
+    const context = canvas.getContext('2d');
+    if (context === null) {
+      throw new Error('离屏Canvas获取上下文失败');
+    }
+
+    for (let i = 0; i < step; i++) {
+      for (let j = 0; j < step; j++) {
+        const idx = step * i + j;
+        context.save();
+        context.fillStyle = ApplicationTest.Colors[idx];
+        context.fillRect(i * amount, j * amount, amount, amount);
+        context.restore();
+      }
+    }
+    return canvas;
+  }
+
+  drawColorCanvas() {
+    const colorCanvas = this.getColorCanvas();
+    this.drawImage(
+      colorCanvas,
+      Rectangle.create(100, 100, colorCanvas.width, colorCanvas.height),
+    );
+  }
+
   fillRectangleWithColor(rect: Rectangle, color: string) {
     if (rect.isEmpty()) return;
     if (this.context2D !== null) {
@@ -120,12 +170,12 @@ export class ApplicationTest extends Canvas2DApplication {
       this.fillRectangleWithColor(destRect, 'grey');
       let rows = Math.ceil(destRect.size.width / srcRect.size.height);
       let columns = Math.ceil(destRect.size.height / srcRect.size.height);
-      const left = 0;
-      const top = 0;
-      const right = 0;
-      const bottom = 0;
-      const width = 0;
-      const height = 0;
+      let left = 0;
+      let top = 0;
+      let right = 0;
+      let bottom = 0;
+      let width = 0;
+      let height = 0;
       const destRight = destRect.origin.x + destRect.size.width;
       const destBottom = destRect.origin.y + destRect.size.height;
       if (fillType === EImageFillType.REPEAT_X) {
@@ -134,8 +184,39 @@ export class ApplicationTest extends Canvas2DApplication {
         rows = 1;
       }
 
-      for (){}
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+          left = destRect.origin.x + i * srcRect.size.width;
+          top = destRect.origin.y + j * srcRect.size.height;
+          width = srcRect.size.width;
+          height = srcRect.size.height;
+          right = left + width;
+          bottom = top + height;
+
+          if (right > destRight) {
+            width = srcRect.size.width - (right - destRight);
+          }
+
+          if (bottom > destBottom) {
+            height = srcRect.size.height - (bottom - destBottom);
+          }
+
+          this.context2D.drawImage(
+            img,
+            srcRect.origin.x,
+            srcRect.origin.y,
+            width,
+            height,
+            left,
+            top,
+            width,
+            height,
+          );
+        }
+      }
     }
+
+    return true;
   }
 
   calcTextSize(text: string, char = 'W', scale = 0.5) {
