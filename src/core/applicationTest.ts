@@ -106,6 +106,33 @@ export class ApplicationTest extends Canvas2DApplication {
     }
   }
 
+  drawCanvasCoordCenter() {
+    if (this.context2D === null) {
+      return;
+    }
+
+    const halfWidth = this.canvas.width * 0.5;
+    const halfHeight = this.canvas.height * 0.5;
+
+    this.context2D.save();
+    this.context2D.lineWidth = 2;
+    this.context2D.strokeStyle = 'rgba(255,0,0,0.5)';
+    this.strokeLine(0, halfHeight, this.canvas.width, halfHeight);
+    this.strokeLine(halfWidth, 0, halfWidth, this.canvas.height);
+    this.context2D.restore();
+    this.fillCircle(halfWidth, halfHeight, 5, 'rgba(0,0,0,0.5)');
+  }
+
+  drawCoordInfo(info: string, x: number, y: number) {
+    this.fillText(info, x, y, 'black', 'center', 'bottom');
+  }
+
+  distance(x0: number, y0: number, x1: number, y1: number) {
+    const diffX = x1 - x0;
+    const diffY = y1 - y0;
+    return Math.sqrt(diffX * diffX + diffY * diffY);
+  }
+
   testChangePartCanvasImageData(
     rRow = 2,
     rColum = 0,
@@ -122,8 +149,43 @@ export class ApplicationTest extends Canvas2DApplication {
     this.drawImage(
       colorCanvas,
       Rectangle.create(100, 100, colorCanvas.width, colorCanvas.height),
-      null,
-      null,
+    );
+
+    let imgData = context.createImageData(size, size);
+    const data = imgData.data;
+    const rgbaCount = data.length / 4;
+    for (let i = 0; i < rgbaCount; i++) {
+      data[i * 4 + 0] = 255;
+      data[i * 4 + 1] = 0;
+      data[i * 4 + 2] = 0;
+      data[i * 4 + 3] = 255;
+    }
+    context.putImageData(imgData, size * rColum, size * rRow, 0, 0, size, size);
+    imgData = context.getImageData(size * cColumn, size * cRow, size, size);
+    let component = 0;
+    for (let i = 0; i < imgData.width; i++) {
+      for (let j = 0; j < imgData.height; j++) {
+        for (let k = 0; k < 4; k++) {
+          const idx: number = (i * imgData.height + j) * 4 + k;
+          component = data[idx];
+          if (idx % 4 !== 3) {
+            data[idx] = 255 - component;
+          }
+        }
+      }
+    }
+    context.putImageData(
+      imgData,
+      size * cColumn,
+      size * cRow,
+      0,
+      0,
+      size,
+      size,
+    );
+    this.drawImage(
+      colorCanvas,
+      Rectangle.create(300, 100, colorCanvas.width, colorCanvas.height),
     );
   }
 
@@ -173,10 +235,10 @@ export class ApplicationTest extends Canvas2DApplication {
   }
 
   drawImage(
-    img: HTMLImageElement,
+    img: HTMLImageElement | HTMLCanvasElement,
     destRect: Rectangle,
     srcRect = Rectangle.create(0, 0, img.width, img.height),
-    fillType: EImageFillType.STRETCH,
+    fillType = EImageFillType.STRETCH,
   ) {
     if (this.context2D === null) {
       return false;
