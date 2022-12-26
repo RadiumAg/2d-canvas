@@ -5,4 +5,4 @@ const canvas: HTMLCanvasElement = document.querySelector(
   '#canvas',
 ) as HTMLCanvasElement;
 const app = new ApplicationTest(canvas);
-app.testChangePartCanvasImageData();
+app.start();

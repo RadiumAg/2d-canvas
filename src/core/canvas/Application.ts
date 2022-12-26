@@ -4,7 +4,7 @@ import { vec2 } from './math2d';
 
 export type TimerCallback = (id: number, data: any) => void;
 
-export enum ETextLayout {
+export enum ELayout {
   LEFT_TOP,
   RIGHT_TOP,
   RIGHT_BOTTOM,

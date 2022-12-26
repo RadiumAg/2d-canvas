@@ -1,6 +1,7 @@
-import { EImageFillType, ETextLayout } from './canvas/Application';
+import { CanvasMouseEvent } from './canvas/CanvasKeyBoardEvent';
+import { EImageFillType, ELayout } from './canvas/Application';
 import { Canvas2DApplication } from './canvas/Canvas2DApplication';
-import { Rectangle, Size, vec2 } from './canvas/math2d';
+import { Math2D, Rectangle, Size, vec2 } from './canvas/math2d';
 
 type Repeatition = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 
@@ -62,19 +63,73 @@ export class ApplicationTest extends Canvas2DApplication {
   private _radialGradient!: CanvasGradient;
   private _linearGradient!: CanvasGradient;
 
-  public render() {
-    // if (this.context2D !== null) {
-    //   this.context2D.clearRect(
-    //     0,
-    //     0,
-    //     this.context2D.canvas.width,
-    //     this.context2D.canvas.height,
-    //   );
-    // }
-    // this._drawRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
+  constructor(canvas: HTMLCanvasElement) {
+    super(canvas);
+    this.isSupportMouseMove = true;
   }
 
-  public static Colors = [
+  dispatchMouseMove(evt: CanvasMouseEvent) {
+    this._mouseX = evt.canvasPosition.x;
+    this._mouseY = evt.canvasPosition.y;
+  }
+
+  render() {
+    if (this.context2D !== null) {
+      this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.strokeGrid();
+      this.drawCanvasCoordCenter();
+      this.drawCoordInfo(
+        `[${this._mouseX},${this._mouseY}]`,
+        this._mouseX,
+        this._mouseY,
+      );
+    }
+    this.doTransform(10);
+  }
+
+  doTransform(degree: number, rotateFirst = true) {
+    if (this.context2D !== null) {
+      const radians = Math2D.toRadian(degree);
+      this.context2D.save();
+
+      if (rotateFirst) {
+        this.context2D.rotate(radians);
+        this.context2D.translate(
+          this.canvas.width * 0.5,
+          this.canvas.height * 0.5,
+        );
+      } else {
+        this.context2D.translate(
+          this.canvas.width * 0.5,
+          this.canvas.height * 0.5,
+        );
+
+        this.context2D.rotate(radians);
+      }
+
+      this.fillRectWithTitle(0, 0, 100, 60, `+${degree}度旋转`);
+      this.context2D.restore();
+      this.context2D.save();
+
+      if (rotateFirst) {
+        this.context2D.rotate(-radians);
+        this.context2D.translate(
+          this.canvas.width * 0.5,
+          this.canvas.height * 0.5,
+        );
+      } else {
+        this.context2D.translate(
+          this.canvas.width * 0.5,
+          this.canvas.height * 0.5,
+        );
+        this.context2D.rotate(-radians);
+      }
+      this.fillRectWithTitle(0, 0, 100, 60, `-${degree}度旋转`);
+      this.context2D.restore();
+    }
+  }
+
+  static Colors = [
     'aqua', //浅绿色
     'black', //黑色
     'blue', //蓝色
@@ -318,6 +373,17 @@ export class ApplicationTest extends Canvas2DApplication {
     return true;
   }
 
+  fillLocalRectWithTitle(
+    width: number,
+    height = '',
+    referencePt = ELayout.CENTER_MIDDLE,
+    layout = ELayout.CENTER_MIDDLE,
+    color = 'grey',
+    showCoord = true,
+  ) {
+    
+  }
+
   calcTextSize(text: string, char = 'W', scale = 0.5) {
     if (this.context2D !== null) {
       const size = new Size();
@@ -330,7 +396,7 @@ export class ApplicationTest extends Canvas2DApplication {
   }
 
   calcLocalTextRectangle(
-    layout: ETextLayout,
+    layout: ELayout,
     text: string,
     parentWidth: number,
     parentHeight: number,
@@ -345,47 +411,47 @@ export class ApplicationTest extends Canvas2DApplication {
     const middle = bottom * 0.5;
 
     switch (layout) {
-      case ETextLayout.LEFT_BOTTOM:
+      case ELayout.LEFT_BOTTOM:
         o.x = left;
         o.y = bottom;
         break;
 
-      case ETextLayout.LEFT_TOP:
+      case ELayout.LEFT_TOP:
         o.x = left;
         o.y = top;
         break;
 
-      case ETextLayout.RIGHT_TOP:
+      case ELayout.RIGHT_TOP:
         o.x = right;
         o.y = top;
         break;
 
-      case ETextLayout.RIGHT_BOTTOM:
+      case ELayout.RIGHT_BOTTOM:
         o.x = right;
         o.y = bottom;
         break;
 
-      case ETextLayout.CENTER_MIDDLE:
+      case ELayout.CENTER_MIDDLE:
         o.x = center;
         o.y = middle;
         break;
 
-      case ETextLayout.CENTER_TOP:
+      case ELayout.CENTER_TOP:
         o.x = center;
         o.y = 0;
         break;
 
-      case ETextLayout.RIGHT_MIDDLE:
+      case ELayout.RIGHT_MIDDLE:
         o.x = right;
         o.y = middle;
         break;
 
-      case ETextLayout.CENTER_BOTTOM:
+      case ELayout.CENTER_BOTTOM:
         o.x = center;
         o.y = bottom;
         break;
 
-      case ETextLayout.LEFT_MIDDLE:
+      case ELayout.LEFT_MIDDLE:
         o.x = left;
         o.y = middle;
         break;
@@ -439,7 +505,7 @@ export class ApplicationTest extends Canvas2DApplication {
     width: number,
     height: number,
     title = '',
-    layout = ETextLayout.CENTER_BOTTOM,
+    layout = ELayout.CENTER_BOTTOM,
     color = 'grey',
     showCoord = true,
   ) {
@@ -549,7 +615,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'left-top',
-        ETextLayout.LEFT_TOP,
+        ELayout.LEFT_TOP,
         'rgba( 255 , 255 , 0 , 0.2 )',
       );
       drawX = right - drawWidth;
@@ -560,7 +626,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'right-top',
-        ETextLayout.RIGHT_TOP,
+        ELayout.RIGHT_TOP,
         'rgba( 255 , 255 , 0 , 0.2 )',
       );
       drawX = right - drawWidth;
@@ -571,7 +637,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'right-bottom',
-        ETextLayout.RIGHT_BOTTOM,
+        ELayout.RIGHT_BOTTOM,
         'rgba( 255 , 255 , 0 , 0.2 )',
       );
       drawX = x;
@@ -582,7 +648,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'left-bottom',
-        ETextLayout.LEFT_BOTTOM,
+        ELayout.LEFT_BOTTOM,
         'rgba( 255 , 255 , 0 , 0.2 )',
       );
       drawX = (right - drawWidth) * 0.5;
@@ -593,7 +659,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'center-middle',
-        ETextLayout.CENTER_MIDDLE,
+        ELayout.CENTER_MIDDLE,
         'rgba( 255 , 0 , 0 , 0.2 )',
       );
       drawX = (right - drawWidth) * 0.5;
@@ -604,7 +670,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'center-top',
-        ETextLayout.CENTER_TOP,
+        ELayout.CENTER_TOP,
         'rgba( 0 , 255 , 0 , 0.2 )',
       );
       drawX = right - drawWidth;
@@ -615,7 +681,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'right-middle',
-        ETextLayout.RIGHT_MIDDLE,
+        ELayout.RIGHT_MIDDLE,
         'rgba( 0 , 255 , 0 , 0.2 )',
       );
       drawX = (right - drawWidth) * 0.5;
@@ -626,7 +692,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'center-bottom',
-        ETextLayout.CENTER_BOTTOM,
+        ELayout.CENTER_BOTTOM,
         'rgba( 0 , 255 , 0 , 0.2 )',
       );
       drawX = x;
@@ -637,7 +703,7 @@ export class ApplicationTest extends Canvas2DApplication {
         drawWidth,
         drawHeight,
         'left-middle',
-        ETextLayout.LEFT_MIDDLE,
+        ELayout.LEFT_MIDDLE,
         'rgba( 0 , 255 , 0 , 0.2 )',
       );
     }
