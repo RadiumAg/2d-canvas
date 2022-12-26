@@ -57,6 +57,8 @@ type FontType =
 export class ApplicationTest extends Canvas2DApplication {
   private _lineDashOffset = 0;
   private _pattern!: CanvasPattern;
+  private _mouseX = 0;
+  private _mouseY = 0;
   private _radialGradient!: CanvasGradient;
   private _linearGradient!: CanvasGradient;
 
