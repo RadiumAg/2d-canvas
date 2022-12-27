@@ -75,6 +75,7 @@ export class ApplicationTest extends Canvas2DApplication {
 
   render() {
     if (this.context2D !== null) {
+      this.testMyTextLayout();
       this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.strokeGrid();
       this.drawCanvasCoordCenter();
@@ -126,6 +127,12 @@ export class ApplicationTest extends Canvas2DApplication {
       }
       this.fillRectWithTitle(0, 0, 100, 60, `-${degree}度旋转`);
       this.context2D.restore();
+    }
+  }
+
+  doLocalTransform() {
+    if (this.context2D === null) {
+      return;
     }
   }
 
@@ -375,13 +382,150 @@ export class ApplicationTest extends Canvas2DApplication {
 
   fillLocalRectWithTitle(
     width: number,
-    height = '',
+    height: number,
+    title = '',
     referencePt = ELayout.CENTER_MIDDLE,
     layout = ELayout.CENTER_MIDDLE,
     color = 'grey',
     showCoord = true,
   ) {
-    
+    if (this.context2D !== null) {
+      let x = 0;
+      let y = 0;
+
+      switch (referencePt) {
+        case ELayout.LEFT_TOP:
+          x = 0;
+          y = 0;
+          break;
+
+        case ELayout.LEFT_MIDDLE:
+          x = 0;
+          y = -height * 0.5;
+          break;
+
+        case ELayout.LEFT_BOTTOM:
+          x = 0;
+          y = -height;
+          break;
+
+        case ELayout.RIGHT_TOP:
+          x = -width;
+          y = 0;
+          break;
+
+        case ELayout.RIGHT_MIDDLE:
+          x = -width;
+          y = -height * 0.5;
+          break;
+
+        case ELayout.RIGHT_BOTTOM:
+          x = -width;
+          y = -height;
+          break;
+
+        case ELayout.CENTER_MIDDLE:
+          x = -width * 0.5;
+          y = -height * 0.5;
+          break;
+
+        case ELayout.CENTER_BOTTOM:
+          x = -width * 0.5;
+          y = -height;
+          break;
+
+        case ELayout.CENTER_TOP:
+          x = -width * 0.5;
+          y = 0;
+          break;
+      }
+
+      this.context2D.save();
+      this.context2D.fillStyle = color;
+      this.context2D.beginPath();
+      this.context2D.rect(x, y, width, height);
+      this.context2D.fill();
+
+      if (title.length > 0) {
+        const rect = this.calcLocalTextRectangle(layout, title, width, height);
+        this.fillText(
+          title,
+          x + rect.origin.x,
+          y + rect.origin.y,
+          'white',
+          'left',
+          'top',
+          '10px sans-serif',
+        );
+        this.strokeRect(
+          x + rect.origin.x,
+          y + rect.origin.y,
+          rect.size.width,
+          rect.size.height,
+          'rgba(0,0,,0,0.5)',
+        );
+        this.fillCircle(x + rect.origin.x, y + rect.origin.y, 2);
+
+        if (showCoord) {
+          this.strokeCoord(0, 0, width + 20, height + 20);
+          this.fillCircle(0, 0, 3);
+        }
+      }
+    }
+  }
+
+  rotateTranslate(
+    degree: number,
+    layout = ELayout.LEFT_TOP,
+    width = 40,
+    height = 20,
+  ) {
+    if (this.context2D === null) return;
+    const radians = Math2D.toRadian(degree);
+    this.context2D.save();
+    this.context2D.rotate(radians);
+    this.context2D.translate(this.canvas.width * 0.5, this.canvas.height * 0.5);
+    this.fillLocalRectWithTitle(width, height, '', layout);
+    this.context2D.restore();
+  }
+
+  strokeCircle(
+    x: number,
+    y: number,
+    radius: number,
+    color = 'red',
+    lineWidth = 1,
+  ): void {
+    if (this.context2D !== null) {
+      this.context2D.save();
+      this.context2D.strokeStyle = color;
+      this.context2D.lineWidth = lineWidth;
+      this.context2D.beginPath();
+      this.context2D.arc(x, y, radius, 0, Math.PI * 2);
+      this.context2D.stroke();
+      this.context2D.restore();
+    }
+  }
+
+  testFillLocalRectWithTitle() {
+    if (this.context2D !== null) {
+      this.rotateTranslate(0, ELayout.LEFT_TOP);
+      this.rotateTranslate(10, ELayout.LEFT_MIDDLE);
+      this.rotateTranslate(20, ELayout.LEFT_BOTTOM);
+      this.rotateTranslate(30, ELayout.CENTER_TOP);
+      this.rotateTranslate(40, ELayout.CENTER_MIDDLE);
+      this.rotateTranslate(-10, ELayout.CENTER_BOTTOM);
+      this.rotateTranslate(-20, ELayout.RIGHT_TOP);
+      this.rotateTranslate(-30, ELayout.RIGHT_MIDDLE);
+      this.rotateTranslate(-40, ELayout.RIGHT_BOTTOM);
+      const radius = this.distance(
+        0,
+        0,
+        this.canvas.width * 0.5,
+        this.canvas.height * 0.5,
+      );
+      this.strokeCircle();
+    }
   }
 
   calcTextSize(text: string, char = 'W', scale = 0.5) {
