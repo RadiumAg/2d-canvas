@@ -1,7 +1,11 @@
-import { CanvasMouseEvent } from './canvas/CanvasKeyBoardEvent';
+import {
+  CanvasKeyBoardEvent,
+  CanvasMouseEvent,
+} from './canvas/CanvasKeyBoardEvent';
 import { EImageFillType, ELayout } from './canvas/Application';
 import { Canvas2DApplication } from './canvas/Canvas2DApplication';
 import { Math2D, Rectangle, Size, vec2 } from './canvas/math2d';
+import { Tank } from './Tank';
 
 type Repeatition = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 
@@ -60,32 +64,51 @@ export class ApplicationTest extends Canvas2DApplication {
   private _pattern!: CanvasPattern;
   private _mouseX = 0;
   private _mouseY = 0;
+  private _tank: Tank;
   private _radialGradient!: CanvasGradient;
   private _linearGradient!: CanvasGradient;
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
+    this._tank = new Tank();
+    this._tank.x = canvas.width * 0.5;
+    this._tank.y = canvas.height * 0.5;
     this.isSupportMouseMove = true;
+  }
+
+  drawTank() {
+    this._tank.draw(this);
+  }
+
+  dispatchKeyPress(evt: CanvasKeyBoardEvent) {
+    this._tank.onKeyPress(evt);
   }
 
   dispatchMouseMove(evt: CanvasMouseEvent) {
     this._mouseX = evt.canvasPosition.x;
     this._mouseY = evt.canvasPosition.y;
+    this._tank.onMouseMove(evt);
   }
 
   render() {
     if (this.context2D !== null) {
-      this.testMyTextLayout();
+      let centX: number;
       this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.strokeGrid();
       this.drawCanvasCoordCenter();
+      this.draw4Quadrant();
+      this.drawTank();
+
       this.drawCoordInfo(
-        `[${this._mouseX},${this._mouseY}]`,
+        `坐标[${(this._mouseX - this._tank.x).toFixed(2)},${(
+          this._mouseY - this._tank.y
+        ).toFixed(2)}] 角度${Math2D.toDegree(this._tank.tankRotation).toFixed(
+          2,
+        )}`,
         this._mouseX,
         this._mouseY,
       );
     }
-    this.doTransform(10);
   }
 
   doTransform(degree: number, rotateFirst = true) {
@@ -134,6 +157,15 @@ export class ApplicationTest extends Canvas2DApplication {
     if (this.context2D === null) {
       return;
     }
+
+    const width = 100;
+    const height = 60;
+
+    const coordWidth = width * 1.2;
+    const coordHeight = height * 1.2;
+    const radius = 5;
+    this.context2D.save();
+    this.context2D.restore();
   }
 
   static Colors = [
@@ -387,7 +419,7 @@ export class ApplicationTest extends Canvas2DApplication {
     referencePt = ELayout.CENTER_MIDDLE,
     layout = ELayout.CENTER_MIDDLE,
     color = 'grey',
-    showCoord = true,
+    showCoord = false,
   ) {
     if (this.context2D !== null) {
       let x = 0;
@@ -471,6 +503,68 @@ export class ApplicationTest extends Canvas2DApplication {
           this.fillCircle(0, 0, 3);
         }
       }
+    }
+  }
+
+  draw4Quadrant() {
+    if (this.context2D === null) return;
+    this.context2D.save();
+    this.fillText(
+      '第一象限',
+      this.canvas.width,
+      this.canvas.height,
+      'rgba(0,0,255,0.5)',
+      'right',
+      'bottom',
+      '20px sans-serif',
+    );
+
+    this.fillText(
+      '第二象限',
+      0,
+      this.canvas.height,
+      'rgba(0,0,255,0.5)',
+      'left',
+      'bottom',
+      '20px sans-serif',
+    );
+
+    this.fillText(
+      '第三象限',
+      0,
+      0,
+      'rgba(0,0,255,0.5)',
+      'left',
+      'top',
+      '20px sans-serif',
+    );
+
+    this.fillText(
+      '第四象限',
+      this.canvas.width,
+      0,
+      'rgba(0,0,255,0.5)',
+      'right',
+      'top',
+      '20px sans-serif',
+    );
+
+    this.context2D.restore();
+  }
+
+  fillLocalRectWithTitleUV(
+    width: number,
+    height: number,
+    title = '',
+    u = 0,
+    v = 0,
+    layout = ELayout.CENTER_MIDDLE,
+    color = 'grey',
+    showCoord = true,
+  ) {
+    if (this.context2D !== null) {
+      const x = -width * u;
+      const y = -height * v;
     }
   }
 
