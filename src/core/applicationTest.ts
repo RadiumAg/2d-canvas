@@ -76,6 +76,70 @@ export class ApplicationTest extends Canvas2DApplication {
     this.isSupportMouseMove = true;
   }
 
+  drawVec(
+    len: number,
+    arrowLen = 10,
+    beginText = '',
+    endText = '',
+    lineWidth = 1,
+    isLineDash = false,
+    showInfo = true,
+    alpha = false,
+  ) {
+    if (this.context2D === null) return;
+
+    if (len < 0) arrowLen = -arrowLen;
+    this.context2D.save();
+    if (isLineDash) {
+      this.context2D.setLineDash([2, 2]);
+    }
+    if (lineWidth > 1) {
+      this.fillCircle(0, 0, 5);
+    } else {
+      this.fillCircle(0, 0, 3);
+    }
+    this.context2D.save();
+    if (alpha === true) {
+      this.context2D.strokeStyle = 'rgba(0,0,0,0.3)';
+    }
+    this.strokeLine(0, 0, len, 0);
+    this.context2D.save();
+    this.strokeLine(len, 0, len - arrowLen, arrowLen);
+    this.context2D.restore();
+    this.context2D.save();
+    this.strokeLine(len, 0, len - arrowLen, -arrowLen);
+    this.context2D.restore();
+    const font: FontType = '15px sans-serif';
+    if (beginText !== undefined && beginText.length > 0) {
+      if (len > 0) {
+        this.fillText(beginText, 0, 0, 'black', 'right', 'bottom', font);
+      } else {
+        this.fillText(beginText, 0, 0, 'black', 'left', 'bottom', font);
+      }
+    }
+
+    len = Number.parseFloat(len.toFixed(2));
+    if (beginText !== undefined && endText.length > 0) {
+      if (len > 0) {
+        this.fillText(endText, len, 0, 'black', 'left', 'bottom', font);
+      } else {
+        this.fillText(endText, len, 0, 'black', 'right', 'bottom', font);
+      }
+    }
+    if (showInfo) {
+      this.fillText(
+        Math.abs(len).toString(),
+        len * 0.5,
+        0,
+        'black',
+        'center',
+        'bottom',
+        font,
+      );
+    }
+    this.context2D.restore();
+  }
+
   drawTank() {
     this._tank.draw(this);
   }
@@ -92,7 +156,6 @@ export class ApplicationTest extends Canvas2DApplication {
 
   render() {
     if (this.context2D !== null) {
-      let centX: number;
       this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.strokeGrid();
       this.drawCanvasCoordCenter();
