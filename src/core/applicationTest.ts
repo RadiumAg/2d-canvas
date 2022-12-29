@@ -68,12 +68,29 @@ export class ApplicationTest extends Canvas2DApplication {
   private _radialGradient!: CanvasGradient;
   private _linearGradient!: CanvasGradient;
 
+  lineStart = vec2.create(150, 150);
+  lineEnd = vec2.create(400, 300);
+  closePt = vec2.create();
+  _hitted = false;
+
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
     this._tank = new Tank();
     this._tank.x = canvas.width * 0.5;
     this._tank.y = canvas.height * 0.5;
     this.isSupportMouseMove = true;
+  }
+
+  dispatchMouseMove(evt: CanvasMouseEvent) {
+    this._mouseX = evt.canvasPosition.x;
+    this._mouseY = evt.canvasPosition.y;
+
+    this._hitted = Math2D.projectPointOnLineSegment(
+      vec2.create(evt.canvasPosition.x, evt.canvasPosition.y),
+      this.lineStart,
+      this.lineEnd,
+      this.closePt,
+    );
   }
 
   drawVec(
@@ -140,6 +157,66 @@ export class ApplicationTest extends Canvas2DApplication {
     this.context2D.restore();
   }
 
+  drawVecFormLine(
+    start: vec2,
+    end: vec2,
+    arrowLen = 10,
+    beginText = '',
+    endText = '',
+    lineWidth = 1,
+    isLineDash = false,
+    showInfo = false,
+    alpha = false,
+  ) {
+    const angle = vec2.getOrientation(start, end, true);
+    if (this.context2D !== null) {
+      const diff = vec2.difference(end, start);
+      const len = diff.length;
+      this.context2D.save();
+      this.context2D.translate(start.x, start.y);
+      this.context2D.rotate(angle);
+      this.drawVec(
+        len,
+        arrowLen,
+        beginText,
+        endText,
+        lineWidth,
+        isLineDash,
+        showInfo,
+        alpha,
+      );
+      this.context2D.restore();
+    }
+    return angle;
+  }
+
+  static projectPointOnLineSegment(
+    pt: vec2,
+    start: vec2,
+    end: vec2,
+    closePoint: vec2,
+  ) {
+    const v0 = vec2.create();
+    const v1 = vec2.create();
+    let d = 0;
+    vec2.difference(pt, start, v0);
+    vec2.difference(end, start, v1);
+    d = v1.normalize();
+    const t = vec2.dotProduct(v0, v1);
+    if (t < 0) {
+      closePoint.x = start.x;
+      closePoint.y = start.y;
+      return false;
+    } else if (t > d) {
+      closePoint.x = end.x;
+      closePoint.y = end.y;
+      return false;
+    } else {
+      vec2.scaleAdd(start, v1, t, closePoint);
+      return true;
+    }
+  }
+
   drawTank() {
     this._tank.draw(this);
   }
@@ -148,29 +225,82 @@ export class ApplicationTest extends Canvas2DApplication {
     this._tank.onKeyPress(evt);
   }
 
-  dispatchMouseMove(evt: CanvasMouseEvent) {
-    this._mouseX = evt.canvasPosition.x;
-    this._mouseY = evt.canvasPosition.y;
-    this._tank.onMouseMove(evt);
+  drawMouseLineProjection() {
+    if (this.context2D !== null) {
+      if (this._hitted === false) {
+        this.drawVecFormLine(
+          this.lineStart,
+          this.lineEnd,
+          10,
+          this.lineStart.toString(),
+          this.lineEnd.toString(),
+          1,
+          false,
+          true,
+        );
+      } else {
+        let angle = 0;
+        const mousePt = vec2.create(this._mouseX, this._mouseY);
+        this.context2D.save();
+        angle = this.drawVecFormLine(
+          this.lineStart,
+          this.lineEnd,
+          10,
+          this.lineStart.toString(),
+          this.lineEnd.toString(),
+          3,
+          false,
+          true,
+        );
+        this.fillCircle(this.closePt.x, this.closePt.y, 5);
+        this.drawVecFormLine(
+          this.lineStart,
+          mousePt,
+          10,
+          '',
+          '',
+          1,
+          true,
+          true,
+          false,
+        );
+        this.drawVecFormLine(
+          this.lineStart,
+          this.closePt,
+          10,
+          '',
+          '',
+          1,
+          true,
+          true,
+          false,
+        );
+        this.context2D.restore();
+        this.context2D.translate(this.closePt.x, this.closePt.y);
+        this.context2D.rotate(angle);
+        this.drawCoordInfo(
+          `[${this.closePt.x.toFixed(2)}], ${this.closePt.y.toFixed(2)}]`,
+          0,
+          0,
+        );
+        this.context2D.restore();
+        angle = vec2.getAngle(
+          vec2.difference(this.lineEnd, this.lineStart),
+          vec2.difference(mousePt, this.lineStart),
+          false,
+        );
+        this.drawCoordInfo(
+          angle.toFixed(2),
+          this.lineStart.x + 10,
+          this.lineStart.y + 10,
+        );
+      }
+    }
   }
 
   render() {
     if (this.context2D !== null) {
-      this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.strokeGrid();
-      this.drawCanvasCoordCenter();
-      this.draw4Quadrant();
-      this.drawTank();
-
-      this.drawCoordInfo(
-        `坐标[${(this._mouseX - this._tank.x).toFixed(2)},${(
-          this._mouseY - this._tank.y
-        ).toFixed(2)}] 角度${Math2D.toDegree(this._tank.tankRotation).toFixed(
-          2,
-        )}`,
-        this._mouseX,
-        this._mouseY,
-      );
+      this.drawMouseLineProjection();
     }
   }
 
