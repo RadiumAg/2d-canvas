@@ -4,7 +4,7 @@ import {
 } from './canvas/CanvasKeyBoardEvent';
 import { EImageFillType, ELayout } from './canvas/Application';
 import { Canvas2DApplication } from './canvas/Canvas2DApplication';
-import { Math2D, Rectangle, Size, vec2 } from './canvas/math2d';
+import { Math2D, Rectangle, Size, mat2d, vec2 } from './canvas/math2d';
 import { Tank } from './Tank';
 
 type Repeatition = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
@@ -75,9 +75,6 @@ export class ApplicationTest extends Canvas2DApplication {
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
-    this._tank = new Tank();
-    this._tank.x = canvas.width * 0.5;
-    this._tank.y = canvas.height * 0.5;
     this.isSupportMouseMove = true;
   }
 
@@ -155,6 +152,23 @@ export class ApplicationTest extends Canvas2DApplication {
       );
     }
     this.context2D.restore();
+  }
+
+  static isPointInCircle(pt: vec2, center: vec2, radius: number) {
+    const diff = vec2.difference(pt, center);
+    const len2 = diff.squaredLength;
+    if (len2 <= radius * radius) {
+      return true;
+    }
+    return false;
+  }
+
+  static isPointOnLineSegment(pt: vec2, start: vec2, end: vec2, radius = 2) {
+    const closePt = vec2.create();
+    if (Math2D.projectPointOnLineSegment(pt, start, end, closePt) === false)
+      return false;
+
+    return Math2D.isPointInCircle(pt, closePt, radius);
   }
 
   drawVecFormLine(
@@ -298,9 +312,108 @@ export class ApplicationTest extends Canvas2DApplication {
     }
   }
 
+  static isPointInRect(
+    ptX: number,
+    ptY: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ) {
+    if (ptX >= x && ptX <= x + w && ptY >= y && ptY <= y + h) {
+      return true;
+    }
+    return false;
+  }
+
+  static isConvex(points: vec2[]) {
+    const sign = Math2D.sign(points[0], points[1], points[2]) < 0;
+    let j: number, k: number;
+    for (let i = 1; i < points.length; i++) {
+      j = (i + 1) % points.length;
+      k = (i + 2) & points.length;
+      if (sign !== Math2D.sign(points[i], points[j], points[k]) < 0) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  static multiply(left: mat2d, right: mat2d, result: mat2d | null = null) {
+    if (result === null) result = new mat2d();
+    const a0 = left.values[0];
+    const a1 = left.values[1];
+    const a2 = left.values[2];
+    const a3 = left.values[3];
+    const a4 = left.values[4];
+    const a5 = left.values[5];
+
+    const b0 = right.values[0];
+    const b1 = right.values[1];
+    const b2 = right.values[2];
+    const b3 = right.values[3];
+    const b4 = right.values[4];
+    const b5 = right.values[5];
+
+    result.values[0] = a0 * b0 + a2 * b1;
+    result.values[1] = a1 * b0 + a3 * b1;
+    result.values[2] = a0 * b2 + a2 * b3;
+    result.values[3] = a1 * b2 + a3 * b3;
+    result.values[4] = a0 * b4 + a2 * b5 + a4;
+    result.values[5] = a1 * b4 + a3 * b5 + a5;
+
+    return result;
+  }
+
+  static isPointInEllipse(
+    ptX: number,
+    ptY: number,
+    centerX: number,
+    centerY: number,
+    radiusX: number,
+    radiusY: number,
+  ) {
+    const diffX = ptX - centerX;
+    const diffY = ptY - centerY;
+    const n =
+      (diffX * diffX) / (radiusX * radiusX) +
+      (diffY * diffY) / (radiusY * radiusY);
+    return n <= 1.0;
+  }
+
+  static isPointInPolygon(pt: vec2, points: vec2[]) {
+    if (points.length < 3) {
+      return false;
+    }
+    for (let i = 2; i < points.length; i++) {
+      if (Math2D.isPointInTriangle(pt, points[0], points[-1], points[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static crossProduct(left: vec2, right: vec2) {
+    return left.x * right.y - left.y * right.x;
+  }
+
+  static sign(v0: vec2, v1: vec2, v2: vec2) {
+    const e1 = vec2.difference(v0, v2);
+    const e2 = vec2.difference(v1, v2);
+    return vec2.crossProduct(e1, e2);
+  }
+
+  isPointInTriangle(pt: vec2, v0: vec2, v1: vec2, v2: vec2) {
+    const b1 = Math2D.sign(v0, v1, pt) < 0.0;
+    const b2 = Math2D.sign(v1, v2, pt) < 0.0;
+    const b3 = Math2D.sign(v2, v0, pt) < 0.0;
+    return b1 === b2 && b2 === b3;
+  }
+
   render() {
     if (this.context2D !== null) {
-      this.drawMouseLineProjection();
     }
   }
 
